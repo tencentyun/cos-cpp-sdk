@@ -1,0 +1,6 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+include_directories(./include)
+add_subdirectory(./src)
+#ADD_EXECUTABLE(sample sample.cpp src/Auth.cpp src/Conf.cpp)
+ADD_EXECUTABLE(sample sample.cpp)
+target_link_libraries(sample cosdk)
