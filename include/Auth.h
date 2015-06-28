@@ -30,11 +30,11 @@ public:
 
 	static string appSign(
 			const uint64_t appId, 
-			const string secretId,
-			const string secretKey,
+			const string &secretId,
+			const string &secretKey,
 			const uint64_t expired,
-			const string fileId,
-			const string bucketName); 
+			const string &fileId,
+			const string &bucketName); 
 		
 
 	 /**
@@ -45,8 +45,11 @@ public:
      * @return string   sign   签名
      */
 	static string appSign_once(
-			const string fileId,
-			const string bucketName);
+			const uint64_t appId, 
+			const string &secretId,
+			const string &secretKey,
+			const string &fileId,
+			const string &bucketName);
 
 	/**
      * 生成多次有效签名函数（用于上传和下载资源，有效期内可重复对不同资源使用）
@@ -56,8 +59,11 @@ public:
      * @return string   sign   签名
      */
 	static string appSign_more(
+			const uint64_t appId, 
+			const string &secretId,
+			const string &secretKey,
 			const uint64_t expired,
-			const string bucketName);
+			const string &bucketName);
 
 
 };

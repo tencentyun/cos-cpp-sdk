@@ -1,4 +1,3 @@
-#include "Conf.h"
 #include "Auth.h"
 #include <cstring>
 #include <openssl/hmac.h>
@@ -120,11 +119,11 @@ std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_
 
 string Auth::appSign(
 	const uint64_t appId, 
-	const string secretId,
-	const string secretKey,
+	const string &secretId,
+	const string &secretKey,
 	const uint64_t expired,
-	const string fileId,
-	const string bucketName) {
+	const string &fileId,
+	const string &bucketName) {
 
 	if (secretId.empty() || secretKey.empty()) {
 		return "";
@@ -172,11 +171,14 @@ string Auth::appSign(
  * @return string   sign   签名
  */
 string Auth::appSign_once(
-		const string fileId,
-		const string bucketName) {
+	const uint64_t appId, 
+	const string &secretId,
+	const string &secretKey,
+	const string &fileId,
+	const string &bucketName) {
 
     return appSign(
-			Conf::APPID, Conf::SECRET_ID, Conf::SECRET_KEY,
+			appId, secretId, secretKey, 
 			0, fileId, bucketName);;
 }
 
@@ -188,10 +190,14 @@ string Auth::appSign_once(
  * @return string   sign   签名
  */
 string Auth::appSign_more(
-		const uint64_t expired,
-		const string bucketName) {
+	const uint64_t appId, 
+	const string &secretId,
+	const string &secretKey,
+	const uint64_t expired,
+	const string &bucketName) {
+
 	return appSign(
-			Conf::APPID, Conf::SECRET_ID, Conf::SECRET_KEY, 
+			appId, secretId, secretKey, 
 			expired, "", bucketName);;
 }
 

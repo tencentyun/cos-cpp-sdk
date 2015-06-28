@@ -1,6 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_policy(SET CMP0015 NEW)
+
 include_directories(./include)
+link_directories(./lib)
 add_subdirectory(./src)
 #ADD_EXECUTABLE(sample sample.cpp src/Auth.cpp src/Conf.cpp)
+#add_library(curl STATIC IMPORTED)
 ADD_EXECUTABLE(sample sample.cpp)
 target_link_libraries(sample cosdk)

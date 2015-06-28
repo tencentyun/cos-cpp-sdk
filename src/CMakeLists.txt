@@ -1,5 +1,6 @@
 aux_source_directory(. src_dir)
 include_directories(../include)
+link_directories(../lib)
 add_library(cosdk STATIC ${src_dir})
-target_link_libraries(cosdk crypto ssl)
+target_link_libraries(cosdk curl crypto ssl rt)
 set_target_properties(cosdk PROPERTIES output_name "libcosdk")
