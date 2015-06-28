@@ -118,48 +118,48 @@ std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_
  */
 
 string Auth::appSign(
-	const uint64_t appId, 
-	const string &secretId,
-	const string &secretKey,
-	const uint64_t expired,
-	const string &fileId,
-	const string &bucketName) {
+    const uint64_t appId, 
+    const string &secretId,
+    const string &secretKey,
+    const uint64_t expired,
+    const string &fileId,
+    const string &bucketName) {
 
-	if (secretId.empty() || secretKey.empty()) {
-		return "";
-	}
+    if (secretId.empty() || secretKey.empty()) {
+        return "";
+    }
 
-	time_t now = time(NULL);
-	unsigned int seed = now;
-	uint64_t rdm = rand_r(&seed);
-	char plainText[10240];
-	unsigned char * output = NULL;
-	unsigned int output_len = 0;
+    time_t now = time(NULL);
+    unsigned int seed = now;
+    uint64_t rdm = rand_r(&seed);
+    char plainText[10240];
+    unsigned char * output = NULL;
+    unsigned int output_len = 0;
 
-	unsigned int input_length = snprintf(plainText, 10240, 
-			"a=%lu&k=%s&e=%lu&t=%lu&r=%lu&f=%s&b=%s",
-			appId, secretId.c_str(), expired,
-			now, rdm, fileId.c_str(), bucketName.c_str());
+    unsigned int input_length = snprintf(plainText, 10240, 
+            "a=%lu&k=%s&e=%lu&t=%lu&r=%lu&f=%s&b=%s",
+            appId, secretId.c_str(), expired,
+            now, rdm, fileId.c_str(), bucketName.c_str());
 
-	int ret = HmacEncode("SHA1", 
-			secretKey.c_str(), secretKey.length(),
-			plainText, input_length,
-		    output, output_len);
+    int ret = HmacEncode("SHA1", 
+            secretKey.c_str(), secretKey.length(),
+            plainText, input_length,
+            output, output_len);
 
-	if (ret != 0) {
-		return "";
-	}
+    if (ret != 0) {
+        return "";
+    }
 
-	unsigned char bin[10240];
+    unsigned char bin[10240];
     unsigned int bin_len = 0;
-	memcpy(bin, output, output_len);
-	memcpy(bin + output_len, plainText, input_length);
-	bin_len = output_len + input_length;
-	free(output);
+    memcpy(bin, output, output_len);
+    memcpy(bin + output_len, plainText, input_length);
+    bin_len = output_len + input_length;
+    free(output);
 
-	string sign = base64_encode(bin, bin_len);
+    string sign = base64_encode(bin, bin_len);
 
-	return sign;
+    return sign;
 } 
 
 
@@ -171,15 +171,15 @@ string Auth::appSign(
  * @return string   sign   签名
  */
 string Auth::appSign_once(
-	const uint64_t appId, 
-	const string &secretId,
-	const string &secretKey,
-	const string &fileId,
-	const string &bucketName) {
+    const uint64_t appId, 
+    const string &secretId,
+    const string &secretKey,
+    const string &fileId,
+    const string &bucketName) {
 
     return appSign(
-			appId, secretId, secretKey, 
-			0, fileId, bucketName);;
+            appId, secretId, secretKey, 
+            0, fileId, bucketName);;
 }
 
 /**
@@ -190,15 +190,15 @@ string Auth::appSign_once(
  * @return string   sign   签名
  */
 string Auth::appSign_more(
-	const uint64_t appId, 
-	const string &secretId,
-	const string &secretKey,
-	const uint64_t expired,
-	const string &bucketName) {
+    const uint64_t appId, 
+    const string &secretId,
+    const string &secretKey,
+    const uint64_t expired,
+    const string &bucketName) {
 
-	return appSign(
-			appId, secretId, secretKey, 
-			expired, "", bucketName);;
+    return appSign(
+            appId, secretId, secretKey, 
+            expired, "", bucketName);;
 }
 
 
