@@ -55,12 +55,12 @@ int main () {
     */
 
     //test list
-    /*
+    ///*
     api.list("test_mikenwang_20150623", "/", 10);
     cout << "retJson:" << api.retJson << endl;
     cout << "retCode:" << api.retCode << endl;
     cout << "retMsg:" << api.retMsg << endl;
-    */
+    //*/
 
     //test upload
     /*
@@ -77,7 +77,7 @@ int main () {
     */
 
     //test upload_slice
-    ///*
+    /*
     api.upload_slice(
             //"../test.mp4", "test_mikenwang_20150623", 
             //"/test.mp4");
@@ -85,7 +85,7 @@ int main () {
             //"/63MB_test.exe", "", 2*1024*1024);
             "/home/ubuntu/cos/sdk/1.6GB_test.mkv", "test_mikenwang_20150623", 
             "/1.6GB_test.mkv", "", 3*1024*1024);
-    //*/
+    */
 
     Cosapi::global_finit();
     return 0;
