@@ -7,14 +7,14 @@ openssl: ubuntu下运行 sudo apt-get install libssl-dev 安装
 
 
 curl: 在 Ubuntu 12.04.2 LTS,linux 版本 3.13.0-32-generic，编译了.a放在lib目录下。  
-      如果有问题，在http://curl.haxx.se/download/curl-7.43.0.tar.gz下载源码，  
+      如果有问题，在http://curl.haxx.se/download/curl-7.43.0.tar.gz 下载源码，  
       编译生成 .a 或者 .so 放到 lib目录下，替换掉原来的libcurl.a  
 
 jsoncpp： 在 Ubuntu 12.04.2 LTS,linux 版本 3.13.0-32-generic，编译了.a放在lib目录下。  
       如果有问题，在 https://github.com/open-source-parsers/jsoncpp 下载源码，  
       编译生成 .a 或者 .so 放到 lib目录下，替换掉原来的libjsoncpp.a  
 
-cmake: 去http://www.cmake.org/download/下载cmake安装好即可  
+cmake: 去http://www.cmake.org/download/ 下载cmake安装好即可  
 
 ##编译生成静态库.a
 执行下面的命令  
