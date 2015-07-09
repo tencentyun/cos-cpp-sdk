@@ -24,6 +24,7 @@ public:
     static const int EXPIRED_SECONDS;
     static const int DEFAULT_SLICE_SIZE;
     static const int MIN_SLICE_FILE_SIZE;
+    static const int MAX_RETRY_TIMES;
     
     const uint64_t APPID;
     const string SECRET_ID;

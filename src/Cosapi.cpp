@@ -80,6 +80,7 @@ string genFileSHA1AndLen(
 const int Cosapi::EXPIRED_SECONDS = 2592000;
 const int Cosapi::DEFAULT_SLICE_SIZE = 3145728;
 const int Cosapi::MIN_SLICE_FILE_SIZE = 10485760;
+const int Cosapi::MAX_RETRY_TIMES = 3;
 
 int32_t Cosapi::global_init() {
     CURLcode retCode;
@@ -303,7 +304,7 @@ int Cosapi::upload_slice(
     }
 
     if (retJson["data"].isMember("url")) {
-        //传成功，直接返回了url
+        //秒传成功，直接返回了url
         return retCode;
     } 
 
@@ -448,10 +449,19 @@ int Cosapi::upload_data(
                 CURLFORM_BUFFERLENGTH, len,
                 CURLFORM_END);
 
-        sendRequest(url, 1, &headers, NULL, firstitem);
-        curl_formfree(firstitem);
+        int retry_times = 0;
+        do {
+            sendRequest(
+                    url, 1, &headers, 
+                    NULL, firstitem);
+            dump_res();
+            if (retCode == 0) {
+                break;
+            }
+            retry_times++;
+        } while(retry_times < MAX_RETRY_TIMES);
 
-        dump_res();
+        curl_formfree(firstitem);
 
         if (retCode != 0) {
             return retCode;
