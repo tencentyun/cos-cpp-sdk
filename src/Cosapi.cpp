@@ -29,6 +29,39 @@ size_t post_callback(
     return byte_num;
 }
 
+unsigned char ToHex(unsigned char x)
+{
+    static char table[16] = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+    };
+    return table[x];
+}
+
+//特殊的urlEncode，'/' 不转义
+std::string cosUrlEncode(const std::string& str)
+{
+    std::string strTemp = "";
+    size_t length = str.length();
+    for (size_t i = 0; i < length; i++)
+    {
+        if (isalnum((unsigned char)str[i]) ||
+            (str[i] == '-') ||
+            (str[i] == '_') ||
+            (str[i] == '.') ||
+            (str[i] == '~') ||(str[i] == '/'))
+            strTemp += str[i];
+        else if (str[i] == ' ')
+            strTemp += "+";
+        else
+        {
+            strTemp += '%';
+            strTemp += ToHex((unsigned char)str[i] >> 4);
+            strTemp += ToHex((unsigned char)str[i] % 16);
+        }
+    }
+    return strTemp;
+}
 
 string genFileSHA1AndLen(
         const string &filePath,
@@ -222,8 +255,9 @@ int Cosapi::upload(
         return retCode;
     }
 
+    string encodePath = cosUrlEncode(dstPath);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, dstPath);
+    string url = generateResUrl(bucketName, encodePath);
 
     string sign =
         Auth::appSign_more(
@@ -280,8 +314,9 @@ int Cosapi::upload_slice(
         return retCode;
     }
 
+    string encodePath = cosUrlEncode(dstPath);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, dstPath);
+    string url = generateResUrl(bucketName, encodePath);
 
     string sign =
         Auth::appSign_more(
@@ -481,8 +516,9 @@ int Cosapi::createFolder(
         ) {
     reset();
 
+    string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, path); 
+    string url = generateResUrl(bucketName, encodePath); 
 
     string sign = 
         Auth::appSign_more(
@@ -514,13 +550,14 @@ int Cosapi::list(
                     const string &path, 
                     const int num, 
                     const string &pattern,
-                    const string &offset,
-                    const int order 
+                    const int order,
+                    const string &offset
         ) {
     reset();
 
+    string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, path); 
+    string url = generateResUrl(bucketName, encodePath); 
 
     char queryStr[1024];
     snprintf(queryStr, sizeof(queryStr),
@@ -552,8 +589,9 @@ int Cosapi::update(
         ) {
     reset();
 
+    string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, path); 
+    string url = generateResUrl(bucketName, encodePath); 
 
     char fileId[1024];
     snprintf(fileId, sizeof(fileId),
@@ -588,8 +626,9 @@ int Cosapi::stat(
         ) {
     reset();
 
+    string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, path); 
+    string url = generateResUrl(bucketName, encodePath); 
 
     char queryStr[1024];
     snprintf(queryStr, sizeof(queryStr),
@@ -618,8 +657,9 @@ int Cosapi::del(
         ) {
     reset();
 
+    string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
-    string url = generateResUrl(bucketName, path); 
+    string url = generateResUrl(bucketName, encodePath); 
 
     char fileId[1024];
     snprintf(fileId, sizeof(fileId),

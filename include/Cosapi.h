@@ -118,8 +118,8 @@ public:
         const string &path, 
         const int num = 20, 
         const string &pattern = "eListBoth",
-        const string &offset = "",
-        const int order = 0
+        const int order = 0,
+        const string &offset = ""
                     );
 
     /*
