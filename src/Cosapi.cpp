@@ -511,7 +511,6 @@ int Cosapi::upload_data(
 int Cosapi::createFolder(
         const string &bucketName, 
         const string &path,
-        const int to_over_write,
         const string &biz_attr
         ) {
     reset();
@@ -531,9 +530,6 @@ int Cosapi::createFolder(
 
     Json::Value reqJson;
     reqJson["op"] = "create";
-    if (to_over_write) {
-        reqJson["to_over_write"] = 1;
-    }
     if (!biz_attr.empty()) {
         reqJson["biz_attr"] = biz_attr;
     }

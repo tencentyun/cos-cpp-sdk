@@ -98,7 +98,6 @@ public:
     int createFolder(
         const string &bucketName, 
         const string &path,
-        const int to_over_write = 0,
         const string &biz_attr = ""
             ); 
 
