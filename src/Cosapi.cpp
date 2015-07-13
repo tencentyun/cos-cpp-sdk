@@ -653,6 +653,12 @@ int Cosapi::del(
         ) {
     reset();
 
+    if (path == "/") {
+        retCode = COSAPI_PARAMS_ERROR;
+        retMsg = "can not delete bucket use api! go to http://console.qcloud.com/cos to operate bucket";
+        return retCode;
+    }
+
     string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
     string url = generateResUrl(bucketName, encodePath); 
