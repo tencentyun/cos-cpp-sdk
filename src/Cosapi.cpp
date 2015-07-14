@@ -592,7 +592,7 @@ int Cosapi::update(
     snprintf(fileId, sizeof(fileId),
             "/%lu/%s%s", APPID,
             bucketName.c_str(),
-            path.c_str());
+            encodePath.c_str());
     string sign = 
         Auth::appSign_once(
                 APPID, SECRET_ID, SECRET_KEY,
@@ -666,7 +666,7 @@ int Cosapi::del(
     snprintf(fileId, sizeof(fileId),
             "/%lu/%s%s", APPID,
             bucketName.c_str(),
-            path.c_str());
+            encodePath.c_str());
     string sign = 
         Auth::appSign_once(
                 APPID, SECRET_ID, SECRET_KEY,
