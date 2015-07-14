@@ -50,9 +50,8 @@ std::string cosUrlEncode(const std::string& str)
             (str[i] == '_') ||
             (str[i] == '.') ||
             (str[i] == '~') ||(str[i] == '/'))
+
             strTemp += str[i];
-        else if (str[i] == ' ')
-            strTemp += "+";
         else
         {
             strTemp += '%';
