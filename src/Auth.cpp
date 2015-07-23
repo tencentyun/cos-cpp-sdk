@@ -2,7 +2,7 @@
 #include <cstring>
 #include <openssl/hmac.h>
 
-namespace Tencentyun{
+namespace Qcloud_cos{
 
 const int Auth::AUTH_URL_FORMAT_ERROR = -1;
 const int Auth::AUTH_SECRET_ID_KEY_ERROR = -2;
@@ -104,20 +104,38 @@ std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_
   
 }  
 
-/**
- * 签名函数（上传、下载、查看资源会生成多次有效签名，
- *           更新、删除资源会生成单次有效签名）
- * @param  uint64_t appId
- * @param  string   secretId
- * @param  string   secretKey
- * @param  uint64_t expired       过期时间,unix时间戳
- * @param  string   fileId     文件路径，以 /{$appId}/{$bucketName} 开头
- * @param  string   bucketName 文件所在bucket
- *
- * @return string   sign   签名
- */
-
 string Auth::appSign(
+    const uint64_t appId, 
+    const string &secretId,
+    const string &secretKey,
+    const uint64_t expired,
+    const string &bucketName) {
+
+    return appSignBase(
+            appId, secretId, secretKey, 
+            expired, "", bucketName);;
+}
+
+string Auth::appSign_once(
+    const uint64_t appId, 
+    const string &secretId,
+    const string &secretKey,
+    const string &path,
+    const string &bucketName) {
+
+    char fileId[2048];
+    snprintf(fileId, sizeof(fileId),
+            "/%lu/%s%s", appId,
+            bucketName.c_str(),
+            path.c_str());
+
+    return appSignBase(
+            appId, secretId, secretKey, 
+            0, fileId, bucketName);
+}
+
+
+string Auth::appSignBase(
     const uint64_t appId, 
     const string &secretId,
     const string &secretKey,
@@ -163,44 +181,6 @@ string Auth::appSign(
 } 
 
 
- /**
- * 生成单次有效签名函数（用于删除和更新指定fileId资源，使用一次即失效）
- * @param  string   fileId     文件路径，以 /{$appId}/{$bucketName} 开头
- * @param  string   bucketName 文件所在bucket
- *
- * @return string   sign   签名
- */
-string Auth::appSign_once(
-    const uint64_t appId, 
-    const string &secretId,
-    const string &secretKey,
-    const string &fileId,
-    const string &bucketName) {
-
-    return appSign(
-            appId, secretId, secretKey, 
-            0, fileId, bucketName);;
-}
-
-/**
- * 生成多次有效签名函数（用于上传和下载资源，有效期内可重复对不同资源使用）
- * @param  uint64_t expired    过期时间,unix时间戳  
- * @param  string   bucketName 文件所在bucket
- *
- * @return string   sign   签名
- */
-string Auth::appSign_more(
-    const uint64_t appId, 
-    const string &secretId,
-    const string &secretKey,
-    const uint64_t expired,
-    const string &bucketName) {
-
-    return appSign(
-            appId, secretId, secretKey, 
-            expired, "", bucketName);;
-}
 
 
-
-}//namespace Tencentyun
+}//namespace Qcloud_cos

@@ -8,7 +8,7 @@
 
 #include "Cosapi.h"
 
-namespace Tencentyun {
+namespace Qcloud_cos{
 
 const string Cosapi::API_COSAPI_END_POINT = 
     "http://web.file.myqcloud.com/files/v1/";
@@ -109,7 +109,7 @@ string genFileSHA1AndLen(
     return shaStr;
 }
 
-const int Cosapi::EXPIRED_SECONDS = 2592000;
+const int Cosapi::EXPIRED_SECONDS = 60;
 const int Cosapi::DEFAULT_SLICE_SIZE = 3145728;
 const int Cosapi::MIN_SLICE_FILE_SIZE = 10485760;
 const int Cosapi::MAX_RETRY_TIMES = 3;
@@ -144,12 +144,14 @@ void Cosapi::dump_res() {
 Cosapi::Cosapi(
         const uint64_t appid, 
         const string &secretId,
-        const string &secretKey)
+        const string &secretKey,
+        uint64_t timeout)
             :APPID(appid),
             SECRET_ID(secretId),
             SECRET_KEY(secretKey) {
 
     _curl_handle = curl_easy_init();
+    _timeout = timeout;
 }
 
 Cosapi::~Cosapi() {
@@ -173,6 +175,36 @@ string Cosapi::generateResUrl(
     return url;
 }
 
+string Cosapi::validFolderPath(const string &path) {
+    if (path.empty()) {
+        return "/";
+    }
+
+    string folderPath = path;
+    if (folderPath[0] != '/') {
+        folderPath = '/' + folderPath;
+    }
+
+    if (folderPath[folderPath.length() - 1] != '/') {
+        folderPath = folderPath + '/';
+    }
+
+    return folderPath;
+}
+
+string Cosapi::validFilePath(const string &path) {
+    if (path.empty()) {
+        return "/";
+    }
+
+    string filePath = path;
+    if (filePath[0] != '/') {
+        filePath = '/' + filePath;
+    }
+
+    return filePath;
+}
+
 int Cosapi::sendRequest(
         const string &url,
         const int isPost,
@@ -187,7 +219,7 @@ int Cosapi::sendRequest(
     curl_easy_setopt(
             _curl_handle, CURLOPT_URL, url.c_str());
     curl_easy_setopt(
-            _curl_handle, CURLOPT_TIMEOUT, 120);
+            _curl_handle, CURLOPT_TIMEOUT, _timeout);
 
     if (isPost) {
         curl_easy_setopt(
@@ -259,7 +291,7 @@ int Cosapi::upload(
     string url = generateResUrl(bucketName, encodePath);
 
     string sign =
-        Auth::appSign_more(
+        Auth::appSign(
                 APPID, SECRET_ID, SECRET_KEY,
                 expired, bucketName);
 
@@ -318,7 +350,7 @@ int Cosapi::upload_slice(
     string url = generateResUrl(bucketName, encodePath);
 
     string sign =
-        Auth::appSign_more(
+        Auth::appSign(
                 APPID, SECRET_ID, SECRET_KEY,
                 expired, bucketName);
 
@@ -514,12 +546,13 @@ int Cosapi::createFolder(
         ) {
     reset();
 
-    string encodePath = cosUrlEncode(path);
+    string folderPath = validFolderPath(path);
+    string encodePath = cosUrlEncode(folderPath);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
     string url = generateResUrl(bucketName, encodePath); 
 
     string sign = 
-        Auth::appSign_more(
+        Auth::appSign(
                 APPID, SECRET_ID, SECRET_KEY,
                 expired, bucketName);
 
@@ -540,7 +573,33 @@ int Cosapi::createFolder(
     return retCode;
 }
 
-int Cosapi::list(
+int Cosapi::listFolder(
+                    const string &bucketName, 
+                    const string &path, 
+                    const int num, 
+                    const string &pattern,
+                    const int order,
+                    const string &offset
+        ) {
+    string folderPath = validFolderPath(path);
+    return listBase(bucketName, folderPath, num,
+            pattern, order, offset);
+}
+
+int Cosapi::prefixSearch(
+                    const string &bucketName, 
+                    const string &prefix, 
+                    const int num, 
+                    const string &pattern,
+                    const int order,
+                    const string &offset
+        ) {
+    string filePath = validFilePath(prefix);
+    return listBase(bucketName, filePath, num,
+            pattern, order, offset);
+}
+
+int Cosapi::listBase(
                     const string &bucketName, 
                     const string &path, 
                     const int num, 
@@ -565,7 +624,7 @@ int Cosapi::list(
     //cout << "url:" << url << endl;
 
     string sign = 
-        Auth::appSign_more(
+        Auth::appSign(
                 APPID, SECRET_ID, SECRET_KEY,
                 expired, bucketName);
 
@@ -577,26 +636,45 @@ int Cosapi::list(
     return retCode;
 }
 
+int Cosapi::updateFolder(
+        const string &bucketName, 
+        const string &path,
+        const string &biz_attr
+        ) {
+    string folderPath = validFolderPath(path);
+    return updateBase(bucketName, folderPath, biz_attr);
+}
+
 int Cosapi::update(
+        const string &bucketName, 
+        const string &path,
+        const string &biz_attr
+        ) {
+    string filePath = validFilePath(path);
+    return updateBase(bucketName, filePath, biz_attr);
+}
+
+int Cosapi::updateBase(
         const string &bucketName, 
         const string &path,
         const string &biz_attr
         ) {
     reset();
 
+    if (path == "/") {
+        retCode = COSAPI_PARAMS_ERROR;
+        retMsg = "can not update bucket use api! go to http://console.qcloud.com/cos to operate bucket";
+        return retCode;
+    }
+
     string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
     string url = generateResUrl(bucketName, encodePath); 
 
-    char fileId[1024];
-    snprintf(fileId, sizeof(fileId),
-            "/%lu/%s%s", APPID,
-            bucketName.c_str(),
-            encodePath.c_str());
     string sign = 
         Auth::appSign_once(
                 APPID, SECRET_ID, SECRET_KEY,
-                fileId, bucketName);
+                encodePath, bucketName);
 
     vector<string> headers;
     headers.push_back("Authorization: " + sign);
@@ -615,7 +693,23 @@ int Cosapi::update(
     return retCode;
 }
 
+int Cosapi::statFolder(
+        const string &bucketName,
+        const string &path
+        ) {
+    string folderPath = validFolderPath(path);
+    return statBase(bucketName, folderPath);
+}
+
 int Cosapi::stat(
+        const string &bucketName,
+        const string &path
+        ) {
+    string filePath = validFilePath(path);
+    return statBase(bucketName, filePath);
+}
+
+int Cosapi::statBase(
         const string &bucketName,
         const string &path
         ) {
@@ -634,7 +728,7 @@ int Cosapi::stat(
     //cout << "url:" << url << endl;
 
     string sign = 
-        Auth::appSign_more(
+        Auth::appSign(
                 APPID, SECRET_ID, SECRET_KEY,
                 expired, bucketName);
 
@@ -646,7 +740,23 @@ int Cosapi::stat(
     return retCode;
 }
 
+int Cosapi::delFolder(
+        const string &bucketName,
+        const string &path
+        ) {
+    string folderPath = validFolderPath(path);
+    return delBase(bucketName, folderPath);
+}
+
 int Cosapi::del(
+        const string &bucketName,
+        const string &path
+        ) {
+    string filePath = validFilePath(path);
+    return delBase(bucketName, filePath);
+}
+
+int Cosapi::delBase(
         const string &bucketName,
         const string &path
         ) {
@@ -662,15 +772,10 @@ int Cosapi::del(
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
     string url = generateResUrl(bucketName, encodePath); 
 
-    char fileId[1024];
-    snprintf(fileId, sizeof(fileId),
-            "/%lu/%s%s", APPID,
-            bucketName.c_str(),
-            encodePath.c_str());
     string sign = 
         Auth::appSign_once(
                 APPID, SECRET_ID, SECRET_KEY,
-                fileId, bucketName);
+                encodePath, bucketName);
 
     vector<string> headers;
     headers.push_back("Authorization: " + sign);
@@ -688,4 +793,4 @@ int Cosapi::del(
 
 
 
-}//namespace Tencentyun
+}//namespace Qcloud_cos

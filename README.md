@@ -44,44 +44,67 @@ g++ -o sample sample.cpp -I ./include/ -L. -L../cos-cpp-sdk/lib/ -lcosdk -lcurl 
     Cosapi::global_init();  
     Cosapi api("your appid",
                 "your secretId",
-                "your secretKey");
+                "your secretKey",
+                "interface timeout");
 
 注意cos上的path以 / 开头
 
 ##计算多次签名，静态函数任何地方可以直接调用
-    string sign = Auth::appSign_more(
+    string sign = Auth::appSign(
                         "your appid", "",
                         "your secretId",
-                        123, "bucketName");
+                        "expired unix timestamp", 
+                        "bucketName");
 
 ##创建目录
-    //注意path以 / 结尾
     api.createFolder(
                 "bucketName", "/test/");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+    api.dump_res();
 
-##删除文件或者目录，目录必须以 / 结尾
-    api.del(
+##listFolder目录下文件列表
+    api.listFolder("bucketName", "/", 10);
+    api.dump_res();
+
+##prefixSearch前缀搜索
+    api.prefixSearch("bucketName", "/test", 10);
+    api.dump_res();
+
+##更新目录属性
+    api.updateFolder(
+            bucketName, "/test/", "attr");
+    api.dump_res();
+
+##更新文件属性
+    api.update(
+            bucketName, "/test.log", "attr");
+    api.dump_res();
+
+##statFolder查询目录
+    api.statFolder(
+            bucketName, "/test/");
+    api.dump_res();
+
+##stat查询文件
+    //可以用来判断文件是否存在
+    api.stat(
+            bucketName, "/test.log");
+    api.dump_res();
+
+##删除目录
+    api.deleteFolder(
             "bucketName", "/test/");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+    api.dump_res();
 
-##list文件列表
-    api.list("bucketName", "/", 10);
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+##删除文件
+    api.del(
+            "bucketName", "/test.log");
+    api.dump_res();
 
 ##上传文件
     api.upload(
             "srcPath", "bucketName",-
             "/dstPath");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+    api.dump_res();
 
 ##大文件分片上传
     //sliceSize参数可以指定分片大小，默认是 512KB
@@ -90,4 +113,5 @@ g++ -o sample sample.cpp -I ./include/ -L. -L../cos-cpp-sdk/lib/ -lcosdk -lcurl 
     api.upload_slice(
             "srcPath", "bucketName",-
             "/dstPath", "", 3*1024*1024);
+    api.dump_res();
 

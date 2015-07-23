@@ -1,91 +1,104 @@
 #include "Cosapi.h"
+#include "cstring"
 
 using namespace std;
-using namespace Tencentyun;
+using namespace Qcloud_cos;
 
 int main () {
+
+    string bucketName = "test_mikenwang_20150623";
 
     Cosapi::global_init();
     Cosapi api(1000029,
             "AKID4EAND9RuE6psJYOuFKlh0Jeg9Q9BmmS2",
-            "jvAAGz07ElrJF1oKWpbKhAIzWF5W6BZN");
+            "jvAAGz07ElrJF1oKWpbKhAIzWF5W6BZN", 30);
     
     //test sign
     /*
-    string sign = Auth::appSign_more(
+    string sign = Auth::appSign(
             1000029, "AKID4EAND9RuE6psJYOuFKlh0Jeg9Q9BmmS2",
             "jvAAGz07ElrJF1oKWpbKhAIzWF5W6BZN",
-            123, "test_bucket");
+            123, bucketName);
     cout << "sign:" << sign << endl;
     */
 
     //test createFolder
     /*
     api.createFolder(
-            "test_mikenwang_20150623", "/test/");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+            bucketName, "/test/");
+    api.dump_res();
+    */
+
+    //test listFolder
+    ///*
+    api.listFolder(
+            bucketName, "/", 10);
+    api.dump_res();
+    //*/
+
+    //test prefixSearch
+    /*
+    api.prefixSearch(
+            bucketName, "/test", 10);
+    api.dump_res();
+    */
+
+    //test updateFolder
+    /*
+    api.updateFolder(
+            bucketName, "/test/", "0");
+    api.dump_res();
     */
 
     //test update
     /*
     api.update(
-            "test_mikenwang_20150623", "/test/", "test update biz_attr");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+            bucketName, "/test.log", "");
+    api.dump_res();
+    */
+
+    //test statFolder
+    /*
+    api.statFolder(
+            bucketName, "/test/");
+    api.dump_res();
     */
 
     //test stat
     /*
-    api.stat("test_mikenwang_20150623", "/chrome_200_percent.pak");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+    api.stat(
+            bucketName, "/test.log");
+    api.dump_res();
+    */
+
+    //test deleteFolder
+    /*
+    api.delFolder(
+            bucketName, "/test/");
+    api.dump_res();
     */
 
     //test delete
     /*
     api.del(
-            "test_mikenwang_20150623", "/test/");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+            bucketName, "/test.log");
+    api.dump_res();
     */
-
-    //test list
-    ///*
-    api.list("test_mikenwang_20150623", "/", 10);
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
-    //*/
 
     //test upload
     /*
     api.upload(
-            //"../test.mp4", "test_mikenwang_20150623", 
-            //"/test.mp4");
-            "/home/ubuntu/cos/sdk/63MB_test.exe", "test_mikenwang_20150623", 
-            "/63MB_test.exe");
-            //"/home/ubuntu/cos/sdk/1.6GB_test.mkv", "test_mikenwang_20150623", 
-            //"/1.6GB_test.mkv");
-    cout << "retJson:" << api.retJson << endl;
-    cout << "retCode:" << api.retCode << endl;
-    cout << "retMsg:" << api.retMsg << endl;
+            "../test.log", bucketName, 
+            "/test.log");
+    api.dump_res();
     */
 
     //test upload_slice
     /*
     api.upload_slice(
-            //"../test.mp4", "test_mikenwang_20150623", 
-            //"/test.mp4");
-            //"/home/ubuntu/cos/sdk/63MB_test.exe", "test_mikenwang_20150623", 
-            //"/63MB_test.exe", "", 2*1024*1024);
-            "/home/ubuntu/cos/sdk/1.6GB_test.mkv", "test_mikenwang_20150623", 
-            "/1.6GB_test.mkv", "", 3*1024*1024);
-    */
+            "../test.log", bucketName, 
+            "/test.log");
+     */
 
     Cosapi::global_finit();
     return 0;
