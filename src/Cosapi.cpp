@@ -475,6 +475,7 @@ int Cosapi::upload_data(
 
     vector<string> headers;
     headers.push_back("Authorization: " + sign);
+	headers.push_back("Expect: ");
 
     ifstream fileInput(srcPath.c_str(),
             ios::in | ios::binary);
@@ -579,11 +580,11 @@ int Cosapi::listFolder(
                     const int num, 
                     const string &pattern,
                     const int order,
-                    const string &offset
+                    const string &context
         ) {
     string folderPath = validFolderPath(path);
     return listBase(bucketName, folderPath, num,
-            pattern, order, offset);
+            pattern, order, context);
 }
 
 int Cosapi::prefixSearch(
@@ -592,11 +593,11 @@ int Cosapi::prefixSearch(
                     const int num, 
                     const string &pattern,
                     const int order,
-                    const string &offset
+                    const string &context
         ) {
     string filePath = validFilePath(prefix);
     return listBase(bucketName, filePath, num,
-            pattern, order, offset);
+            pattern, order, context);
 }
 
 int Cosapi::listBase(
@@ -605,19 +606,20 @@ int Cosapi::listBase(
                     const int num, 
                     const string &pattern,
                     const int order,
-                    const string &offset
+                    const string &context
         ) {
     reset();
 
     string encodePath = cosUrlEncode(path);
     uint64_t expired = time(NULL) + EXPIRED_SECONDS;
     string url = generateResUrl(bucketName, encodePath); 
-
+	string encodeContext = cosUrlEncode(context);
+	
     char queryStr[1024];
     snprintf(queryStr, sizeof(queryStr),
-            "?op=list&num=%d&pattern=%s&offset=%s&order=%d", 
+            "?op=list&num=%d&pattern=%s&context=%s&order=%d", 
             num, pattern.c_str(), 
-            offset.c_str(), order);
+            encodeContext.c_str(), order);
 
     url += queryStr;
 
