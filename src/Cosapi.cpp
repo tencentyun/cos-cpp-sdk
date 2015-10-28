@@ -244,6 +244,10 @@ int Cosapi::sendRequest(
                     list, it->c_str());
             it++;
         }
+        if (isPost) {
+            list = (curl_slist_append(
+                    list, "Expect: "));
+        }
         curl_easy_setopt(
                 _curl_handle, CURLOPT_HTTPHEADER, list);
 
@@ -265,7 +269,7 @@ int Cosapi::sendRequest(
         retMsg = retJson["message"].asString();
     } else {
         retCode = COSAPI_NETWORK_ERROR;
-        retMsg = "net work err...";
+        retMsg = response_str;
     }
     
     return curl_ret;
