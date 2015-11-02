@@ -244,13 +244,13 @@ int Cosapi::sendRequest(
                     list, it->c_str());
             it++;
         }
-        if (isPost) {
-            list = (curl_slist_append(
-                    list, "Expect: "));
-        }
         curl_easy_setopt(
                 _curl_handle, CURLOPT_HTTPHEADER, list);
 
+    }
+    if (isPost) {
+        list = curl_slist_append(
+                    list, "Expect: ");
     }
 
     curl_easy_setopt(
