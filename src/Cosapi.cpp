@@ -165,7 +165,11 @@ string Cosapi::generateResUrl(
     string url = "";
     char urlBytes[10240];
     snprintf(urlBytes, sizeof(urlBytes),
+#if __WORDSIZE == 64
             "%s%lu/%s%s",
+#else
+            "%s%llu/%s%s",
+#endif
             API_COSAPI_END_POINT.c_str(),
             APPID, 
             bucketName.c_str(), 
@@ -254,6 +258,11 @@ int Cosapi::sendRequest(
     }
 
     curl_easy_setopt(
+            _curl_handle, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(
+            _curl_handle, CURLOPT_SSL_VERIFYPEER, 1);
+
+    curl_easy_setopt(
             _curl_handle, CURLOPT_WRITEFUNCTION, 
             post_callback);
     curl_easy_setopt(
@@ -268,8 +277,13 @@ int Cosapi::sendRequest(
         retCode = retJson["code"].asInt();
         retMsg = retJson["message"].asString();
     } else {
+        if (response_str.empty()) {
+            response_str = "connect failed!";
+        }
         retCode = COSAPI_NETWORK_ERROR;
         retMsg = response_str;
+        retJson["code"] = retCode;
+        retJson["message"] = retMsg;
     }
     
     return curl_ret;
@@ -287,6 +301,8 @@ int Cosapi::upload(
     if (ret != 0) {
         retCode = COSAPI_FILE_NOT_EXISTS;
         retMsg = "file not exist or can not be read...";
+        retJson["code"] = retCode;
+        retJson["message"] = retMsg;
         return retCode;
     }
 
@@ -346,6 +362,8 @@ int Cosapi::upload_slice(
     if (ret != 0) {
         retCode = COSAPI_FILE_NOT_EXISTS;
         retMsg = "file not exist or can not be read...";
+        retJson["code"] = retCode;
+        retJson["message"] = retMsg;
         return retCode;
     }
 
@@ -366,8 +384,6 @@ int Cosapi::upload_slice(
 
     upload_prepare(fileSize, sha1, 
             sign, url,bizAttr, session, sliceSize);
-
-    dump_res();
 
     if (retCode != 0) {
         return retCode;
@@ -414,7 +430,11 @@ int Cosapi::upload_prepare(
             CURLFORM_COPYCONTENTS, "upload_slice",
             CURLFORM_END);
 
+#if __WORDSIZE == 64
     snprintf(buf, sizeof(buf), "%lu", fileSize);
+#else
+    snprintf(buf, sizeof(buf), "%llu", fileSize);
+#endif
     ret = curl_formadd(&firstitem, &lastitem,
             CURLFORM_COPYNAME, "filesize",
             CURLFORM_COPYCONTENTS, buf,
@@ -440,13 +460,11 @@ int Cosapi::upload_prepare(
     }
 
     if (sliceSize > 0) {
-        if (sliceSize <= DEFAULT_SLICE_SIZE) {
-            snprintf(
-                buf, sizeof(buf), "%lu", sliceSize);
-        } else {
-            snprintf(
-                buf, sizeof(buf), "%lu", sliceSize);
-        }
+#if __WORDSIZE == 64
+        snprintf(buf, sizeof(buf), "%lu", sliceSize);
+#else
+        snprintf(buf, sizeof(buf), "%llu", sliceSize);
+#endif
 
         ret = curl_formadd(&firstitem, &lastitem,
                 CURLFORM_COPYNAME, "slice_size",
@@ -479,7 +497,6 @@ int Cosapi::upload_data(
 
     vector<string> headers;
     headers.push_back("Authorization: " + sign);
-	headers.push_back("Expect: ");
 
     ifstream fileInput(srcPath.c_str(),
             ios::in | ios::binary);
@@ -501,8 +518,11 @@ int Cosapi::upload_data(
                 CURLFORM_COPYCONTENTS, "upload_slice",
                 CURLFORM_END);
 
-        snprintf(tmp_buf, sizeof(tmp_buf), 
-                "%lu", pos);
+#if __WORDSIZE == 64
+        snprintf(tmp_buf, sizeof(tmp_buf), "%lu", pos);
+#else
+        snprintf(tmp_buf, sizeof(tmp_buf), "%llu", pos);
+#endif
         ret = curl_formadd(&firstitem, &lastitem,
                 CURLFORM_COPYNAME, "offset",
                 CURLFORM_COPYCONTENTS, tmp_buf,
@@ -517,7 +537,7 @@ int Cosapi::upload_data(
                 CURLFORM_COPYNAME, "filecontent",
                 CURLFORM_BUFFER, "data",
                 CURLFORM_BUFFERPTR, buf,
-                CURLFORM_BUFFERLENGTH, len,
+                CURLFORM_BUFFERLENGTH, (long)len,
                 CURLFORM_END);
 
         int retry_times = 0;
@@ -525,7 +545,6 @@ int Cosapi::upload_data(
             sendRequest(
                     url, 1, &headers, 
                     NULL, firstitem);
-            dump_res();
             if (retCode == 0) {
                 break;
             }
@@ -572,7 +591,6 @@ int Cosapi::createFolder(
     }
     Json::FastWriter writer;
     string data = writer.write(reqJson);
-    //cout << "reqData:" << data << endl;
 
     sendRequest(url, 1, &headers, data.c_str());
     return retCode;
@@ -627,8 +645,6 @@ int Cosapi::listBase(
 
     url += queryStr;
 
-    //cout << "url:" << url << endl;
-
     string sign = 
         Auth::appSign(
                 APPID, SECRET_ID, SECRET_KEY,
@@ -670,6 +686,8 @@ int Cosapi::updateBase(
     if (path == "/") {
         retCode = COSAPI_PARAMS_ERROR;
         retMsg = "can not update bucket use api! go to http://console.qcloud.com/cos to operate bucket";
+        retJson["code"] = retCode;
+        retJson["message"] = retMsg;
         return retCode;
     }
 
@@ -693,7 +711,6 @@ int Cosapi::updateBase(
     }
     Json::FastWriter writer;
     string data = writer.write(reqJson);
-    //cout << "reqData:" << data << endl;
 
     sendRequest(url, 1, &headers, data.c_str());
     return retCode;
@@ -730,8 +747,6 @@ int Cosapi::statBase(
             "?op=stat");
 
     url += queryStr;
-
-    //cout << "url:" << url << endl;
 
     string sign = 
         Auth::appSign(
@@ -771,6 +786,8 @@ int Cosapi::delBase(
     if (path == "/") {
         retCode = COSAPI_PARAMS_ERROR;
         retMsg = "can not delete bucket use api! go to http://console.qcloud.com/cos to operate bucket";
+        retJson["code"] = retCode;
+        retJson["message"] = retMsg;
         return retCode;
     }
 
@@ -791,7 +808,6 @@ int Cosapi::delBase(
     reqJson["op"] = "delete";
     Json::FastWriter writer;
     string data = writer.write(reqJson);
-    //cout << "reqData:" << data << endl;
 
     sendRequest(url, 1, &headers, data.c_str());
     return retCode;

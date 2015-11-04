@@ -125,7 +125,12 @@ string Auth::appSign_once(
 
     char fileId[2048];
     snprintf(fileId, sizeof(fileId),
-            "/%lu/%s%s", appId,
+#if __WORDSIZE == 64
+            "/%lu/%s%s",
+#else
+            "/%llu/%s%s",
+#endif
+            appId,
             bucketName.c_str(),
             path.c_str());
 
@@ -155,7 +160,11 @@ string Auth::appSignBase(
     unsigned int output_len = 0;
 
     unsigned int input_length = snprintf(plainText, 10240, 
+#if __WORDSIZE == 64
             "a=%lu&k=%s&e=%lu&t=%lu&r=%lu&f=%s&b=%s",
+#else
+            "a=%llu&k=%s&e=%llu&t=%lu&r=%llu&f=%s&b=%s",
+#endif
             appId, secretId.c_str(), expired,
             now, rdm, fileId.c_str(), bucketName.c_str());
 
