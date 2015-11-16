@@ -214,9 +214,12 @@ int Cosapi::sendRequest(
         const int isPost,
         const vector<string> *headers,
         const char *data,
-        struct curl_httppost * form_data) {
+        struct curl_httppost * form_data, bool needRetry) {
 
-    curl_easy_reset(_curl_handle);
+	if(!_curl_handle) {
+    	//curl_easy_reset(_curl_handle);
+		_curl_handle = curl_easy_init();
+	}
 
     CURLcode curl_ret = CURLE_OK;
 
@@ -257,6 +260,8 @@ int Cosapi::sendRequest(
                     list, "Expect: ");
     }
 
+	list = curl_slist_append(list, "Connection: Keep-Alive");
+
     curl_easy_setopt(
             _curl_handle, CURLOPT_SSL_VERIFYHOST, 0);
     curl_easy_setopt(
@@ -271,6 +276,11 @@ int Cosapi::sendRequest(
 
     curl_ret = curl_easy_perform(_curl_handle);
     curl_slist_free_all(list);
+	if(CURLE_OK != curl_ret && needRetry) {
+		curl_easy_cleanup(_curl_handle);
+		_curl_handle = NULL;
+		return sendRequest(url, isPost, headers, data, form_data, false);
+	}
 
     Json::Reader reader;
     if (reader.parse(response_str, retJson)) {
