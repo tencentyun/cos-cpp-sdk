@@ -55,8 +55,7 @@ public:
             const int isPost,
             const vector<string> *headers,
             const char *data = NULL,
-            struct curl_httppost * form_data = NULL,
-            bool needRetry = true);
+            struct curl_httppost * form_data = NULL);
 
     string generateResUrl(
             const string &bucketName,

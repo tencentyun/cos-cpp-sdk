@@ -214,12 +214,9 @@ int Cosapi::sendRequest(
         const int isPost,
         const vector<string> *headers,
         const char *data,
-        struct curl_httppost * form_data, bool needRetry) {
+        struct curl_httppost * form_data) {
 
-	if(!_curl_handle) {
-    	//curl_easy_reset(_curl_handle);
-		_curl_handle = curl_easy_init();
-	}
+    curl_easy_reset(_curl_handle);
 
     CURLcode curl_ret = CURLE_OK;
 
@@ -276,11 +273,6 @@ int Cosapi::sendRequest(
 
     curl_ret = curl_easy_perform(_curl_handle);
     curl_slist_free_all(list);
-	if(CURLE_OK != curl_ret && needRetry) {
-		curl_easy_cleanup(_curl_handle);
-		_curl_handle = NULL;
-		return sendRequest(url, isPost, headers, data, form_data, false);
-	}
 
     Json::Reader reader;
     if (reader.parse(response_str, retJson)) {
