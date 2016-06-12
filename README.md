@@ -24,94 +24,81 @@ cd build
 cmake ..  
 make  
 
-需要将sample.cpp里的appid、secretId、secretKey、bucket等信息换成你自己的。  
-生成的sample就可以直接运行，试用，  
+需要将cos_demo.cpp里的appid、secretId、secretKey、bucket等信息换成你自己的。  
+生成的cos_demo就可以直接运行，试用，  
 
 生成的静态库，名称为:libcosdk.a  
 
 ##将生成的库链接进自己的项目
 生成的libcosdk.a放到你自己的工程里lib路径下，  
-include目录下的 Auth.h  Cosapi.h curl  json  openssl都放到你自己的工程的include路径下。  
+include目录下的 auth_utility.h  cosapi.h curl  json  openssl都放到你自己的工程的include路径下。  
 
-例如我的项目里只有一个sample.cpp,项目目录和sdk在同级目录，copy libcosdk.a 到项目所在目录  
+例如我的项目里只有一个cos_demo.cpp,项目目录和sdk在同级目录，copy libcosdk.a 到项目所在目录  
 那么编译命令为:  
-g++ -o sample sample.cpp -I ./include/ -L. -L../cos-cpp-sdk/lib/ -lcosdk -lcurl -lcrypto -lssl -lrt -ljsoncpp
+g++ -o cos_demo cos_demo.cpp -I ./include/ -L. -L../cos-cpp-sdk/lib/ -lcosdk -lcurl -lcrypto -lssl -lrt -ljsoncpp
 
 #windows系统咱不支持
 
 #sample例子
 使用接口前，必须调用：  
-    Cosapi::global_init();  
-    Cosapi api("your appid",
-                "your secretId",
-                "your secretKey",
-                "interface timeout");
+    qcloud_cos::COS_Init();  
+	CosApiClientOption client_option("your appid", "your secretId", "your secretKey", "interface timeout");
+    Cosapi api(client_option);
 
 注意cos上的path以 / 开头
 
 ##计算多次签名，静态函数任何地方可以直接调用
-    string sign = Auth::appSign(
-                        "your appid", "",
-                        "your secretId",
+    string sign = AuthUtility::AppSignMuti(
+                        "your appid", "your secretId",
+                        "your secretKey",
                         "expired unix timestamp", 
                         "bucketName");
 
 ##创建目录
-    api.createFolder(
+    api.CreateFolder(
                 "bucketName", "/test/");
-    api.dump_res();
 
 ##listFolder目录下文件列表
-    api.listFolder("bucketName", "/", 10);
-    api.dump_res();
+    api.ListFolder("bucketName", "/", 10);
 
 ##prefixSearch前缀搜索
-    api.prefixSearch("bucketName", "/test", 10);
-    api.dump_res();
+    api.PrefixSearch("bucketName", "/test", 10);
 
 ##更新目录属性
-    api.updateFolder(
+    api.UpdateFolder(
             bucketName, "/test/", "attr");
-    api.dump_res();
 
 ##更新文件属性
-    api.update(
+    api.Update(
             bucketName, "/test.log", "attr");
-    api.dump_res();
 
 ##statFolder查询目录
-    api.statFolder(
+    api.StatFolder(
             bucketName, "/test/");
-    api.dump_res();
 
 ##stat查询文件
     //可以用来判断文件是否存在
-    api.stat(
+    api.Stat(
             bucketName, "/test.log");
-    api.dump_res();
 
 ##删除目录
-    api.deleteFolder(
+    api.DeleteFolder(
             "bucketName", "/test/");
-    api.dump_res();
 
 ##删除文件
-    api.del(
+    api.DelFile(
             "bucketName", "/test.log");
-    api.dump_res();
 
 ##上传文件
-    api.upload(
+    api.Upload(
             "srcPath", "bucketName",-
             "/dstPath");
-    api.dump_res();
 
 ##大文件分片上传
     //sliceSize参数可以指定分片大小，默认是 512KB
     //后台允许的最大分片大小是3MB
     //如果中途失败，以相同的参数再次调用upload_slice可以自动断点续传
-    api.upload_slice(
+    api.UploadSlice(
             "srcPath", "bucketName",-
             "/dstPath", "", 3*1024*1024);
-    api.dump_res();
 
