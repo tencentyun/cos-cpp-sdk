@@ -1,7 +1,16 @@
+cmake_minimum_required(VERSION 2.8)
+CMAKE_policy(SET CMP0015 NEW)
+
 aux_source_directory(. src_dir)
 include_directories(../include)
 link_directories(../lib)
 add_library(cosdk STATIC ${src_dir})
-target_link_libraries(cosdk curl crypto ssl rt jsoncpp z)
-#set_target_properties(cosdk PROPERTIES output_name "libcosdk")
+if (_USE_L5)
+    add_definitions(-D_USE_L5)
+    message("use l5")
+    target_link_libraries(cosdk curl ssl rt jsoncpp qos_client stdc++ pthread crypto z)
+ELSE()
+    target_link_libraries(cosdk curl ssl rt jsoncpp stdc++ pthread crypto z)
+ENDIF()
+
 set_target_properties(cosdk PROPERTIES OUTPUT_NAME "cosdk")
