@@ -37,7 +37,7 @@ include目录下的 auth_utility.h  cosapi.h curl  json  openssl都放到你自�
 那么编译命令为:  
 g++ -o cos_demo cos_demo.cpp -I ./include/ -L. -L../cos-cpp-sdk/lib/ -lcosdk -lcurl -lcrypto -lssl -lrt -ljsoncpp
 
-#windows系统咱不支持
+#windows系统暂时不支持
 
 #sample例子
 使用接口前，必须调用：  
