@@ -1,7 +1,7 @@
 # cos-cpp-sdk
 
 ## 已弃用 - 请升级到 cos-cpp-sdk-v5
-SDK 已弃用，请直接使用基于 XML API 的 [cos-cpp-sdk-v5](https://github.com/tencentyun/cos-cpp-sdk-v5)。
+> SDK 已弃用，请直接使用基于 XML API 的 [cos-cpp-sdk-v5](https://github.com/tencentyun/cos-cpp-sdk-v5)。
 
 ##linux等类UINX系统使用手册
 ##需要安装的库和工具
