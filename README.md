@@ -1,6 +1,9 @@
 # cos-cpp-sdk
 
-#linux等类UINX系统使用手册
+## 已弃用 - 请升级到 cos-cpp-sdk-v5
+SDK 已弃用，请直接使用基于 XML API 的 [cos-cpp-sdk-v5](https://github.com/tencentyun/cos-cpp-sdk-v5)。
+
+##linux等类UINX系统使用手册
 ##需要安装的库和工具
 openssl: ubuntu下运行 sudo apt-get install libssl-dev 安装  
 其他类uinx系统按照各自的方法安装好该库  
